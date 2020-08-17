@@ -115,28 +115,35 @@ gitlab_url:
 
     Example: `https://gitlab.com/Tecnativa/your-doodba-project`.
 
-domains_prod:
+domains:
   type: yaml
-  help: >-
-    Write the main production domains for this project. Only the domains, no protocol or
-    things like that.
+  help: |
+    Write the domains for this project.
 
-    The format is a dictionary where the key is the main domain, and the value is a list
-    of alternative domains that will get redirected to it with a 301 redirection, in
-    case there were any.
+    The format is a list with these keys:
 
-    Example: {www.main.com: [main.com], www.shop.com: [shop.main.com, shop.org,
-    shop.com]}
-
-domains_staging:
-  type: yaml
-  help: >-
-    Write the staging domains for this project. Only the domains, no protocol or things
-    like that.
-
-    The format is a list of strings.
-
-    Example: [demo1.example.com, demo2.example.com]
+    - host: The domain name. String.
+    - usage: Can be "prod" or "demo". Default: prod.
+    - tls: Enable or not TLS. Boolean. Default: true.
+    - cert_resolver: Traefik cert resolver name. String. Default: letsencrypt.
+      Set it to null to use a self-signed certificate.
+    - redirect_to: Apply a 301 redirection to this other domain.
+      String. Default: null.
+  placeholder: |
+    # - host: www.main.com            # main domain 1
+    # - host: shop.main.com           # main domain 2
+    # - host: main.com                # Secondary domain redirects to main 1
+    #   redirect_to: www.main.com
+    # - host: old.shop.com            # Secondary domain redirects to main 2
+    #   redirect_to: shop.main.com
+    # - host: lan.main.com            # LAN-only domain, without TLS
+    #   tls: false
+    # - host: vpn.main.com            # VPN-only domain, with self-signed certificate
+    #   cert_resolver: null
+    # - host: demo1.main.com          # demo domain 1
+    #   usage: demo
+    # - host: demo2.main.com          # demo domain 2
+    #   usage: demo
 
 paths_without_crawlers:
   default:

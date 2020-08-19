@@ -1,0 +1,39 @@
+{# Loop over domain group lists, and call back with the domain_group variable. #}
+{%- macro domains_loop_grouped(domain_groups_list) %}
+    {%- set domain_group = namespace(exit=false) %}
+    {%- for _domain_group in domain_groups_list|default([], true) %}
+        {%- if not domain_group.exit %}
+            {%- set domain_group.redirect_to = _domain_group.redirect_to|default(none) %}
+            {%- set domain_group.cert_resolver = _domain_group.cert_resolver|default("letsencrypt") %}
+            {%- set domain_group.loop = loop}
+            {{- caller(domain_group) }}
+        {%- endif %}
+    {%- endfor %}
+{%- endmacro %}
+
+{# Loop over domain group lists and call back with a single domain. #}
+{%- macro domains_loop_single(domain_groups_list) %}
+    {%- set domain = namespace(exit=false, index0=-1, index=0) %}
+    {%- call(domain_group) domains_loop_grouped(domain_groups_list)) %}
+        {%- set domain.group = domain_group %}
+        {%- for host in domain_group.hosts|default([], true) %}
+            {%- if not domain.exit %}
+                {%- set domain.host = host %}
+                {%- set domain.index += 1 %}
+                {%- set domain.index0 += 1 %}
+                {%- set domain.loop = loop %}
+                {{- caller(domain) }}
+            {%- endif %}
+        {%- endfor %}
+    {%- endcall %}
+{%- endmacro %}
+
+{# Loop over a domain groups list, call back with the 1st domain found and exit. #}
+{%- macro first_main_domain(domain_groups_list) %}
+    {%- call(domain) domains_loop_single(domain_groups_list)) %}
+        {%- if not domain.redirect_to %}
+            {{- caller(domain) }}
+            {%- set domain.exit = true %}
+        {%- endif %}
+    {%- endcall %}
+{%- endmacro %}

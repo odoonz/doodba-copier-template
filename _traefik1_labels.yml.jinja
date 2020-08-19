@@ -1,0 +1,47 @@
+{%- import "_macros.jinja" as macros -%}
+{#
+  Note: indentation of 6 spaces is important because that's the depth level
+  of container labels in a docker-compose file.
+
+  At some point, Traefik v1 will be unsupported and this file will disappear.
+#}
+
+{# Echo all domains without redirections, separated with commas #}
+{%- macro main_domains_rule(domain_groups_list) %}
+  {%- set had_first_match = false %}
+  {%- call(domain) macros.domains_loop_single(domain_groups_list)) %}
+    {%- if not domain.redirect_to %}
+      {%- if had_first_match %},{% endif %}
+      {%- set had_first_match = true %}
+      {{- domain.host }}
+    {%- endif %}
+  {%- endcall %}
+{%- endmacro %}
+
+{%- macro odoo(domain_groups_list, paths_without_crawlers) %}
+      {%- if paths_without_crawlers %}
+      traefik.forbid-crawlers.frontend.rule:
+        Host:
+          {%- call main_domains_rule(domain_groups_list) -%}
+          ;PathPrefix:
+          {%- for path in paths_without_crawlers -%}
+            {{ path }},{{ path }}/{anything:.*}
+            {%- if not loop.last %},{% endif %}
+          {%- endfor %}
+      {%- endif %}
+      traefik.longpolling.frontend.rule:
+        Host:
+          {%- call main_domains_rule(domain_groups_list) -%}
+          ;PathPrefix:/longpolling/
+      traefik.www.frontend.rule:
+        Host:
+          {%- call main_domains_rule(domain_groups_list) -%}
+      {%- call(domain_group) macros.domains_loop_grouped(domain_groups_list) %}
+      {% if domain_group.redirect_to %}
+      traefik.alt-{{ domain_group.loop.index0 }}.frontend.redirect.regex: ^(.*)://([^/]+)/(.*)$$
+      traefik.alt-{{ domain_group.loop.index0 }}.frontend.redirect.replacement: $$1://{{ domain_group.redirect_to }}/$$3
+      traefik.alt-{{ domain_group.loop.index0 }}.frontend.rule:
+        Host:{{ domain_group.hosts|join(",") }}
+      {%- endif %}
+      {%- endcall %}
+{%- endmacro %}

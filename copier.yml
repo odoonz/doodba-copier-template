@@ -12,6 +12,7 @@ _envops:
 # Other Copier configurations
 _min_copier_version: "4.1.0"
 _exclude:
+  - _*.jinja
   - /.git
   - /.github
   - /.gitmodules
@@ -115,35 +116,61 @@ gitlab_url:
 
     Example: `https://gitlab.com/Tecnativa/your-doodba-project`.
 
-domains:
+domains_prod:
   type: yaml
   help: |
-    Write the domains for this project.
+    Configure the production domains for this project.
 
     The format is a list with these keys:
 
-    - host: The domain name. String.
-    - usage: Can be "prod" or "demo". Default: prod.
-    - tls: Enable or not TLS. Boolean. Default: true.
-    - cert_resolver: Traefik cert resolver name. String. Default: letsencrypt.
-      Set it to null to use a self-signed certificate.
+    - hosts: The domain names. List of strings.
     - redirect_to: Apply a 301 redirection to this other domain.
       String. Default: null.
-  placeholder: |
-    # - host: www.main.com            # main domain 1
-    # - host: shop.main.com           # main domain 2
-    # - host: main.com                # Secondary domain redirects to main 1
-    #   redirect_to: www.main.com
-    # - host: old.shop.com            # Secondary domain redirects to main 2
-    #   redirect_to: shop.main.com
-    # - host: lan.main.com            # LAN-only domain, without TLS
-    #   tls: false
-    # - host: vpn.main.com            # VPN-only domain, with self-signed certificate
-    #   cert_resolver: null
-    # - host: demo1.main.com          # demo domain 1
-    #   usage: demo
-    # - host: demo2.main.com          # demo domain 2
-    #   usage: demo
+    - cert_resolver: Traefik cert resolver name. String. Default: letsencrypt.
+      Set it to null to use a self-signed certificate.
+
+    Example:
+
+    # Main domains, with TLS and cert resolved with "letsencrypt" resolver
+    - hosts: [www.main.com, shop.main.com]
+    # Alternate domains that redirect to main ones
+    - {hosts: [main.com, old.main.com], redirect_to: www.main.com}
+    - {hosts: [www.shop.main.com, old.shop.main.com], redirect_to: shop.main.com}
+    # VPN-only domain, with self-signed certificate
+    - {hosts: [vpn.main.com], cert_resolver: null}
+
+    ⚠ Remember that you have to write one-line YAML, at least until Copier
+    supports multiline input
+
+    ⚠ Some advanced features are only available if you deploy with Traefik 2.
+
+domains_staging:
+  type: yaml
+  help: |
+    Configure the staging (demo) domains for this project.
+
+    The format is the same as for `prod_domains`; a list with these keys:
+
+    - hosts: The domain names. List of strings.
+    - redirect_to: Apply a 301 redirection to this other domain.
+      String. Default: null.
+    - cert_resolver: Traefik cert resolver name. String. Default: letsencrypt.
+      Set it to null to use a self-signed certificate.
+
+    Example:
+
+    # Main domains, with TLS and cert resolved with "letsencrypt" resolver
+    - hosts: [demo1.main.com, demo2.main.com]
+    # Alternate domains that redirect to main ones
+    - {hosts: [www.demo1.main.com, old.demo1.main.com], redirect_to: demo1.main.com}
+    - {hosts: [www.demo2.main.com, old.demo2.main.com], redirect_to: demo2.main.com}
+    # VPN-only domain, with self-signed certificate
+    - {hosts: [vpn.demo.main.com], cert_resolver: null}
+
+    ⚠ Remember that you have to write one-line YAML, at least until Copier
+    supports multiline input
+
+    ⚠ Some advanced features are only available if you deploy with Traefik 2.
 
 paths_without_crawlers:
   default:

@@ -4,8 +4,8 @@
   of container labels in a docker-compose file.
 #}
 
-{# Echo all domains without redirections, in a Host() rule #}
-{%- macro main_domains_rule(domain_groups_list) -%}
+{# Echo all domains, in a Host() rule #}
+{%- macro domains_rule(domain_groups_list) -%}
   {%- set had_first_match = false -%}
   Host(
     {%- call(domain) macros.domains_loop_single(domain_groups_list) %}
@@ -22,7 +22,6 @@
 
 {%- macro odoo(domain_groups_list, cidr_whitelist, key, odoo_version,
                paths_without_crawlers, project_name) %}
-      {%- set domains_without_redirection = domain_groups_list|rejectattr("redirect_to") %}
       # Services
       traefik.http.services.{{ key }}-main.loadbalancer.server.port: 8069
       traefik.http.services.{{ key }}-longpolling.loadbalancer.server.port: 8072
@@ -49,11 +48,14 @@
         {{ key }}-redirect-{{ domain_group.loop.index0 }}
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.rule:
-        {%- call main_domains_rule([domain_group]) %}{% endcall %}
+        {%- call domains_rule([domain_group]) %}{% endcall %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.tls: "true"
       {%- if domain_group.cert_resolver %}
+      traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.tls: "true"
+      {%- if domain_group.cert_resolver is string %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
+      {%- endif %}
       {%- endif %}
 
       {%- else %}
@@ -65,21 +67,27 @@
         {{ key }}-compress
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.rule:
-        {% call main_domains_rule([domain_group]) %}{% endcall %}
+        {% call domains_rule([domain_group]) %}{% endcall %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
       {%- if domain_group.cert_resolver %}
+      traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.tls: "true"
+      {%- if domain_group.cert_resolver is string %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
-      {% endif %}
+      {%- endif %}
+      {%- endif %}
       # Longpolling service at domain(s) {{ domain_group.hosts|join(", ") }}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.entrypoints: "web-main"
       {%- if cidr_whitelist %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.middlewares: {{ key }}-whitelist
       {%- endif %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.rule:
-        {% call main_domains_rule([domain_group]) %}{% endcall %} && PathPrefix(`/longpolling/`)
+        {% call domains_rule([domain_group]) %}{% endcall %} && PathPrefix(`/longpolling/`)
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.service: "{{ key }}-longpolling"
       {%- if domain_group.cert_resolver %}
+      traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.tls: "true"
+      {%- if domain_group.cert_resolver is string %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
+      {%- endif %}
       {%- endif %}
       {%- endif %}
       {%- if paths_without_crawlers %}
@@ -91,7 +99,7 @@
         {{ key }}-forbid-crawlers
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-forbiddenCrawlers-{{ domain_group.loop.index0 }}.rule:
-        {% call main_domains_rule([domain_group]) %}{% endcall %} && Path(
+        {% call domains_rule([domain_group]) %}{% endcall %} && Path(
           {%- for path in paths_without_crawlers -%}
           `{{ path }}`, `{{ path }}/{anything:.*}`
           {%- if not loop.last %}, {% endif %}
@@ -99,7 +107,10 @@
         )
       traefik.http.routers.{{ key }}-forbiddenCrawlers-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
       {%- if domain_group.cert_resolver %}
+      traefik.http.routers.{{ key }}-forbiddenCrawlers-{{ domain_group.loop.index0 }}.tls: "true"
+      {%- if domain_group.cert_resolver is string %}
       traefik.http.routers.{{ key }}-forbiddenCrawlers-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
+      {%- endif %}
       {%- endif %}
       {%- endif %}
       {%- endif %}

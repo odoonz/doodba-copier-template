@@ -1,6 +1,7 @@
+{%- import "_macros.jinja" as macros -%}
 {%- import "_traefik1_labels.yml.jinja" as traefik1_labels -%}
 {%- import "_traefik2_labels.yml.jinja" as traefik2_labels -%}
-{%- set key = traefik2_labels.key(project_name, odoo_version, "test") -%}
+{%- set _key = traefik2_labels.key(project_name, odoo_version, "test") -%}
 version: "2.4"
 
 services:
@@ -66,35 +67,33 @@ services:
     labels:
       traefik.docker.network: "inverseproxy_shared"
       traefik.enable: "true"
+      {#- Traefik v1 labels #}
       traefik.frontend.passHostHeader: "true"
       traefik.frontend.rule:
-        Host:
-        {%- for main_domain in domains_staging -%}
-          $DOMAIN_STAGING_{{ loop.index0 }}
-          {%- if not loop.last %},{% endif -%}
-        {%- endfor -%};PathPrefixStrip:/smtpfake/
+        Host:{{ traefik1_labels.main_domains_rule() }};PathPrefixStrip:/smtpfake/
       traefik.port: "8025"
+      {#- Traefik v2 labels #}
       # Mailhog service
       traefik.http.middlewares.{{ _key }}-mailhog-stripprefix.stripPrefix.prefixes: /smtpfake
-      traefik.http.routers.{{ _key }}-mailhog.entrypoints: web-main
-      traefik.http.routers.{{ _key }}-mailhog.middlewares:
+      traefik.http.services.{{ _key }}-mailhog.loadbalancer.server.port: 8025
+      {%- call(domain_group) macros.domains_loop_grouped(domains_staging|rejectattr("redirect_to")) %}
+      traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.entrypoints: web-main
+      traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.middlewares:
         {{ _key }}-buffering,
         {{ _key }}-compress,
         {{ _key }}-forbid-crawlers,
         {{ _key }}-mailhog-stripprefix
         {%- if cidr_whitelist %}, {{ _key }}-whitelist{% endif %}
-      traefik.http.routers.{{ _key }}-mailhog.rule:
-        Host(
-          {%- for main_domain in domains_staging -%}
-            `$DOMAIN_STAGING_{{ loop.index0 }}`
-            {%- if not loop.last %}, {% endif -%}
-          {%- endfor -%}
-        ) && PathPrefix(`/smtpfake/`)
-      traefik.http.routers.{{ _key }}-mailhog.service: {{ _key }}-mailhog
-      {%- if traefik_cert_resolver %}
-      traefik.http.routers.{{ _key }}-mailhog.tls.certresolver: "{{ traefik_cert_resolver }}"
+      traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.rule:
+        {{ traefik2_labels.domains_rule([domain_group]) }} && PathPrefix(`/smtpfake/`)
+      traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.service: {{ _key }}-mailhog
+      {%- if domain_group.cert_resolver %}
+      traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.tls: "true"
+      {%- if domain_group.cert_resolver is string %}
+      traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.tls.certresolver: "{{ domain_group.cert_resolver }}"
       {%- endif %}
-      traefik.http.services.{{ _key }}-mailhog.loadbalancer.server.port: 8025
+      {%- endif %}
+      {%- endcall %}
     {%- endif %}
     volumes:
       - "smtpconf:/etc/mailhog:ro,z"

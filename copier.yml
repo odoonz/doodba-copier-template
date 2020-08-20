@@ -126,8 +126,9 @@ domains_prod:
     - hosts: The domain names. List of strings.
     - redirect_to: Apply a 301 redirection to this other domain.
       String. Default: null.
-    - cert_resolver: Traefik cert resolver name. String. Default: letsencrypt.
-      Set it to null to use a self-signed certificate.
+    - cert_resolver: Traefik cert resolver name. String/Boolean. Default: "letsencrypt".
+      Set it to `true` to use a self-signed certificate. Set it to `false` to
+      disable TLS in those domains.
 
     Example:
 
@@ -137,7 +138,7 @@ domains_prod:
     - {hosts: [main.com, old.main.com], redirect_to: www.main.com}
     - {hosts: [www.shop.main.com, old.shop.main.com], redirect_to: shop.main.com}
     # VPN-only domain, with self-signed certificate
-    - {hosts: [vpn.main.com], cert_resolver: null}
+    - {hosts: [vpn.main.com], cert_resolver: true}
 
     ⚠ Remember that you have to write one-line YAML, at least until Copier
     supports multiline input
@@ -154,8 +155,9 @@ domains_staging:
     - hosts: The domain names. List of strings.
     - redirect_to: Apply a 301 redirection to this other domain.
       String. Default: null.
-    - cert_resolver: Traefik cert resolver name. String. Default: letsencrypt.
-      Set it to null to use a self-signed certificate.
+    - cert_resolver: Traefik cert resolver name. String/Boolean. Default: "letsencrypt".
+      Set it to `true` to use a self-signed certificate. Set it to `false` to
+      disable TLS in those domains.
 
     Example:
 
@@ -165,7 +167,7 @@ domains_staging:
     - {hosts: [www.demo1.main.com, old.demo1.main.com], redirect_to: demo1.main.com}
     - {hosts: [www.demo2.main.com, old.demo2.main.com], redirect_to: demo2.main.com}
     # VPN-only domain, with self-signed certificate
-    - {hosts: [vpn.demo.main.com], cert_resolver: null}
+    - {hosts: [vpn.demo.main.com], cert_resolver: true}
 
     ⚠ Remember that you have to write one-line YAML, at least until Copier
     supports multiline input
@@ -263,20 +265,6 @@ odoo_proxy:
     can create performance problems.
 
     Which proxy will you use to deploy odoo?
-
-traefik_cert_resolver:
-  default: letsencrypt
-  type: yaml
-  help: >-
-    💡 This is not used if your proxy is not Traefik 2.
-
-    💡 If your proxy is Traefik, you should launch it with a certificate resolver with
-    this name, that will handle certificate resolution. See
-    https://docs.traefik.io/https/acme/#configuration-examples
-
-    💡 Use `null` if you don't want to use a HTTPS in Traefik.
-
-    What's the name of your Traefik 2 certificate resolver?
 
 postgres_version:
   default: 12

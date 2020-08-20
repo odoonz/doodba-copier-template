@@ -19,23 +19,19 @@
 {%- endmacro %}
 
 {%- macro odoo(domain_groups_list, paths_without_crawlers) %}
+      {%- set _rule = main_domains_rule(domain_groups_list) %}
+      {%- if _rule %}
       {%- if paths_without_crawlers %}
       traefik.forbid-crawlers.frontend.rule:
-        Host:
-          {%- call main_domains_rule(domain_groups_list) -%}{% endcall %}
-          ;PathPrefix:
-          {%- for path in paths_without_crawlers -%}
-            {{ path }},{{ path }}/{anything:.*}
-            {%- if not loop.last %},{% endif %}
-          {%- endfor %}
+        Host:{{ _rule }};PathPrefix:
+        {%- for path in paths_without_crawlers -%}
+          {{ path }},{{ path }}/{anything:.*}
+          {%- if not loop.last %},{% endif %}
+        {%- endfor %}
       {%- endif %}
       traefik.longpolling.frontend.rule:
-        Host:
-          {%- call main_domains_rule(domain_groups_list) -%}{% endcall %}
-          ;PathPrefix:/longpolling/
-      traefik.www.frontend.rule:
-        Host:
-          {%- call main_domains_rule(domain_groups_list) -%}{% endcall %}
+        Host:{{ _rule }};PathPrefix:/longpolling/
+      traefik.www.frontend.rule: Host:{{ _rule }}
       {%- call(domain_group) macros.domains_loop_grouped(domain_groups_list) %}
       {% if domain_group.redirect_to %}
       traefik.alt-{{ domain_group.loop.index0 }}.frontend.redirect.regex: ^(.*)://([^/]+)/(.*)$$
@@ -44,4 +40,5 @@
         Host:{{ domain_group.hosts|join(",") }}
       {%- endif %}
       {%- endcall %}
+      {%- endif %}
 {%- endmacro %}

@@ -30,15 +30,15 @@ services:
     labels:
       {#- Traefik v1 labels, to be removed when unsupported #}
       traefik.frontend.headers.customResponseHeaders: "X-Robots-Tag:noindex, nofollow"
-      {%- call traefik1_labels.odoo(domains_staging, ["/"]) %}{% endcall %}
-      {%- call traefik2_labels.odoo(
+      {{- traefik1_labels.odoo(domains_staging, ["/"]) }}
+      {{- traefik2_labels.odoo(
         domains_staging,
         cidr_whitelist,
         _key,
         odoo_version,
         ["/"],
         project_name,
-      ) %}{% endcall %}
+      ) }}
     {%- endif %}
     command:
       - odoo

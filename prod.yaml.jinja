@@ -28,15 +28,15 @@ services:
     {%- if odoo_proxy == "traefik" and domains_prod %}
       inverseproxy_shared:
     labels:
-      {%- call traefik1_labels.odoo(domains_prod, paths_without_crawlers) %}{% endcall %}
-      {%- call traefik2_labels.odoo(
+      {{- traefik1_labels.odoo(domains_prod, paths_without_crawlers) }}
+      {{- traefik2_labels.odoo(
         domains_prod,
         cidr_whitelist,
         _key,
         odoo_version,
         paths_without_crawlers,
         project_name,
-      ) %}{% endcall %}
+      ) }}
     {%- endif %}
 
   db:

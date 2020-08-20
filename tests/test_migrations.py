@@ -204,18 +204,16 @@ def test_v2_0_0_migration(
         if data.get("domain_prod"):
             expected_domains_prod.append(
                 {
-                    "hosts": [data["domains_prod"]],
+                    "hosts": [domain_prod],
                     "cert_resolver": data.get("traefik_cert_resolver"),
                 }
             )
         if data.get("domain_prod_alternatives") and expected_domains_prod:
             expected_domains_prod.append(
                 {
-                    "hosts": data[
-                        "domain_prod_alternatives",
-                        "cert_resolver" : data.get("traefik_cert_resolver"),
-                        "redirect_to":domain_prod,
-                    ]
+                    "hosts": domain_prod_alternatives,
+                    "cert_resolver": data.get("traefik_cert_resolver"),
+                    "redirect_to": domain_prod,
                 }
             )
         assert answers["domains_prod"] == expected_domains_prod

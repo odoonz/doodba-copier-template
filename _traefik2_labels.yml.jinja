@@ -48,9 +48,8 @@
         {{ key }}-redirect-{{ domain_group.loop.index0 }}
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.rule:
-        {%- call domains_rule([domain_group]) %}{% endcall %}
+        {{ domains_rule([domain_group]) }}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
-      traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.tls: "true"
       {%- if domain_group.cert_resolver %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.tls: "true"
       {%- if domain_group.cert_resolver is string %}
@@ -67,7 +66,7 @@
         {{ key }}-compress
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.rule:
-        {% call domains_rule([domain_group]) %}{% endcall %}
+        {{ domains_rule([domain_group]) }}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
       {%- if domain_group.cert_resolver %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.tls: "true"
@@ -81,7 +80,7 @@
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.middlewares: {{ key }}-whitelist
       {%- endif %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.rule:
-        {% call domains_rule([domain_group]) %}{% endcall %} && PathPrefix(`/longpolling/`)
+        {{ domains_rule([domain_group]) }} && PathPrefix(`/longpolling/`)
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.service: "{{ key }}-longpolling"
       {%- if domain_group.cert_resolver %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.tls: "true"
@@ -99,7 +98,7 @@
         {{ key }}-forbid-crawlers
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-forbiddenCrawlers-{{ domain_group.loop.index0 }}.rule:
-        {% call domains_rule([domain_group]) %}{% endcall %} && Path(
+        {{ domains_rule([domain_group]) }} && Path(
           {%- for path in paths_without_crawlers -%}
           `{{ path }}`, `{{ path }}/{anything:.*}`
           {%- if not loop.last %}, {% endif %}

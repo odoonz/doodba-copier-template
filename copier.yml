@@ -12,7 +12,8 @@ _envops:
 # Other Copier configurations
 _min_copier_version: "4.1.0"
 _exclude:
-  - _*.jinja
+  - _macros
+  - _traefik*_labels.yml
   - /.git
   - /.github
   - /.gitmodules

@@ -88,16 +88,14 @@ def update_domains_structure(c, dst_path, answers_rel_path):
         new_domains_prod.append(
             {"hosts": [domain_prod], "cert_resolver": traefik_cert_resolver}
         )
-    if domain_prod_alternatives:
-        new_domains_prod.append(
-            [
+        if domain_prod_alternatives:
+            new_domains_prod.append(
                 {
                     "hosts": domain_prod_alternatives,
                     "cert_resolver": traefik_cert_resolver,
                     "redirect_to": domain_prod,
                 }
-            ]
-        )
+            )
     answers_yaml.setdefault("domains_prod", new_domains_prod)
     # Update domains_staging
     domain_test = answers_yaml.pop("domain_test", None)

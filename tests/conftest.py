@@ -133,6 +133,10 @@ def traefik_host(docker: LocalCommand, request):
         yield traefik_details[0]["NetworkSettings"]["Networks"]["inverseproxy_shared"][
             "IPAddress"
         ]
+        # Make sure there were no errors or warnings in logs
+        traefik_logs = docker("container", "logs", traefik_container)
+        assert " level=error " not in traefik_logs
+        assert " level=warn " not in traefik_logs
     finally:
         docker("container", "rm", "--force", traefik_container)
 

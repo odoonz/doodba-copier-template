@@ -13,8 +13,9 @@
     {%- set domain_group = namespace(exit=false) %}
     {%- for _domain_group in domain_groups_list|default([], true) %}
         {%- if not domain_group.exit %}
-            {%- set domain_group.redirect_to = _domain_group.redirect_to|default(none) %}
             {%- set domain_group.cert_resolver = _domain_group.cert_resolver|default("letsencrypt") %}
+            {%- set domain_group.hosts = _domain_group.hosts|default([], true) %}
+            {%- set domain_group.redirect_to = _domain_group.redirect_to|default(none) %}
             {%- set domain_group.loop = loop %}
             {{- caller(domain_group) }}
         {%- endif %}

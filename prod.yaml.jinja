@@ -14,7 +14,7 @@ services:
       - .docker/db-access.env
     environment:
       DOODBA_ENVIRONMENT: "${DOODBA_ENVIRONMENT-prod}"
-      INITIAL_LANG: "$INITIAL_LANG"
+      INITIAL_LANG: "{{ odoo_initial_lang }}"
       {%- if smtp_relay_host %}
       SMTP_SERVER: smtplocal
       {%- endif %}

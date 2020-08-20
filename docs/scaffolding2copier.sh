@@ -20,8 +20,8 @@ copier $CUSTOM_COPIER_FLAGS \
   -d domain_prod_alternatives="[$DOMAIN_PROD_ALT]" \
   -d domain_test="$DOMAIN_TEST" \
   -d odoo_version="$ODOO_MINOR" \
-  -d odoo_initial_lang="$INITIAL_LANG" \
-  -d odoo_oci_image="$ODOO_IMAGE" \
+  -d odoo_initial_lang="{{ odoo_initial_lang }}" \
+  -d odoo_oci_image="{{ odoo_oci_image }}" \
   -d odoo_dbfilter="$DB_FILTER" \
   -d odoo_proxy=traefik \
   -d postgres_version="$DB_VERSION" \

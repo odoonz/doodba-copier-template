@@ -195,6 +195,8 @@ def test_v2_0_0_migration(
         git("add", ".")
         git("commit", "-am", "reformat", retcode=1)
         git("commit", "-am", "updated from template in v2.0.0")
+        # Assert .env removal
+        assert not Path(".env").exists()
         # Assert domain structure migration
         answers = yaml.safe_load(Path(".custom.copier-answers.yaml").read_text())
         assert "domain_prod" not in answers

@@ -1,3 +1,13 @@
+{# Odoo version formatted without dot #}
+{%- macro version_major(odoo_version) %}
+    {{- "%.0f"|format(odoo_version) }}
+{%- endmacro %}
+
+{# Odoo version formatted with one single dot #}
+{%- macro version_minor(odoo_version) %}
+    {{- "%.1f"|format(odoo_version) }}
+{%- endmacro %}
+
 {# Loop over domain group lists, and call back with the domain_group variable. #}
 {%- macro domains_loop_grouped(domain_groups_list) %}
     {%- set domain_group = namespace(exit=false) %}

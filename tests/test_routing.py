@@ -18,29 +18,25 @@ def test_multiple_domains(
     environment: str,
 ):
     """Test multiple domains are produced properly."""
+    base_domain = f"{traefik_host}.sslip.io"
+    base_path = f"{base_domain}/web/login"
     data = {
         "odoo_version": supported_odoo_version,
         "project_name": uuid.uuid4().hex,
         f"domains_{environment}": [
             # main0 has no TLS
-            {"hosts": [f"main0.{traefik_host}.sslip.io"], "cert_resolver": False},
+            {"hosts": [f"main0.{base_domain}"], "cert_resolver": False},
             {
-                "hosts": [
-                    f"alt0.main0.{traefik_host}.sslip.io",
-                    f"alt1.main0.{traefik_host}.sslip.io",
-                ],
+                "hosts": [f"alt0.main0.{base_domain}", f"alt1.main0.{base_domain}"],
                 "cert_resolver": None,
-                "redirect_to": f"main0.{traefik_host}.sslip.io",
+                "redirect_to": f"main0.{base_domain}",
             },
             # main1 has self-signed certificates
-            {"hosts": [f"main1.{traefik_host}.sslip.io"], "cert_resolver": True},
+            {"hosts": [f"main1.{base_domain}"], "cert_resolver": True},
             {
-                "hosts": [
-                    f"alt0.main1.{traefik_host}.sslip.io",
-                    f"alt1.main1.{traefik_host}.sslip.io",
-                ],
+                "hosts": [f"alt0.main1.{base_domain}", f"alt1.main1.{base_domain}"],
                 "cert_resolver": True,
-                "redirect_to": f"main1.{traefik_host}.sslip.io",
+                "redirect_to": f"main1.{base_domain}",
             },
         ],
     }
@@ -53,7 +49,6 @@ def test_multiple_domains(
             force=True,
             data=data,
         )
-        base_path = f"{traefik_host}"
         try:
             dc("build")
             dc(

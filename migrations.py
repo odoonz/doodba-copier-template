@@ -106,3 +106,5 @@ def update_domains_structure(c, dst_path, answers_rel_path):
         )
     answers_yaml.setdefault("domains_test", new_domains_test)
     answers_path.write_text(yaml.safe_dump(answers_yaml))
+    # Remove .env file
+    Path(dst_path, ".env").unlink()

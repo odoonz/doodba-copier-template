@@ -111,7 +111,11 @@ def traefik_host(docker: LocalCommand, request):
             "2"
         ):
             traefik_container = traefik_run(
-                "--entrypoints.web-main.address=:80",
+                "--entrypoints.web-insecure.address=:80",
+                "--entrypoints.web-insecure.http.redirections.entryPoint.permanent=true",
+                "--entrypoints.web-insecure.http.redirections.entryPoint.scheme=https",
+                "--entrypoints.web-insecure.http.redirections.entryPoint.to=web-main",
+                "--entrypoints.web-main.address=:443",
                 "--log.level=debug",
                 "--providers.docker.exposedByDefault=false",
                 "--providers.docker.network=inverseproxy_shared",
@@ -119,12 +123,13 @@ def traefik_host(docker: LocalCommand, request):
             ).strip()
         else:
             traefik_container = traefik_run(
-                "--logLevel=debug",
-                "--defaultEntryPoints=http",
+                "--defaultEntryPoints=http,https",
                 "--docker.exposedByDefault=false",
                 "--docker.watch",
                 "--docker",
-                "--entryPoints=Name:http Address::80 Compress:on",
+                "--entryPoints=Name:http Address::80 Redirect.EntryPoint:https",
+                "--entryPoints=Name:https Address::443 Compress:on",
+                "--logLevel=debug",
             ).strip()
         traefik_details = json.loads(docker("container", "inspect", traefik_container))
         assert (

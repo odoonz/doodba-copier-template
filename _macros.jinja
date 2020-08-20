@@ -25,13 +25,14 @@
 {# Loop over domain group lists and call back with a single domain. #}
 {%- macro domains_loop_single(domain_groups_list) %}
     {%- set domain = namespace(exit=false, index0=0, index=1) %}
+    {%- set parent_caller = caller %}
     {%- call(domain_group) domains_loop_grouped(domain_groups_list) %}
         {%- set domain.group = domain_group %}
         {%- for host in domain_group.hosts|default([], true) %}
             {%- if not domain.exit %}
                 {%- set domain.host = host %}
                 {%- set domain.loop = loop %}
-                {{- caller(domain) }}
+                {{- parent_caller(domain) }}
                 {%- set domain.index = domain.index + 1 %}
                 {%- set domain.index0 = domain.index0 + 1 %}
             {%- endif %}

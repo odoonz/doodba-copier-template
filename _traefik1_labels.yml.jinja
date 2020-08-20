@@ -8,11 +8,11 @@
 
 {# Echo all domains without redirections, separated with commas #}
 {%- macro main_domains_rule(domain_groups_list) %}
-  {%- set had_first_match = false %}
+  {%- set _ns = namespace(had_first_match=false) %}
   {%- call(domain) macros.domains_loop_single(domain_groups_list) %}
     {%- if not domain.redirect_to %}
-      {%- if had_first_match %},{% endif %}
-      {%- set had_first_match = true %}
+      {%- if _ns.had_first_match %},{% endif %}
+      {%- set _ns.had_first_match = true %}
       {{- domain.host }}
     {%- endif %}
   {%- endcall %}
@@ -32,7 +32,7 @@
       traefik.longpolling.frontend.rule:
         Host:{{ _rule }};PathPrefix:/longpolling/
       traefik.www.frontend.rule: Host:{{ _rule }}
-      {%- call(domain_group) macros.domains_loop_grouped(domain_groups_list) %}
+
       {% if domain_group.redirect_to %}
       traefik.alt-{{ domain_group.loop.index0 }}.frontend.redirect.regex: ^(.*)://([^/]+)/(.*)$$
       traefik.alt-{{ domain_group.loop.index0 }}.frontend.redirect.replacement: $$1://{{ domain_group.redirect_to }}/$$3

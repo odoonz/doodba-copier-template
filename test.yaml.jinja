@@ -25,14 +25,14 @@ services:
     networks:
       default:
       globalwhitelist_shared:
-    {%- if odoo_proxy == "traefik" and domains_staging %}
+    {%- if odoo_proxy == "traefik" and domains_test %}
       inverseproxy_shared:
     labels:
       {#- Traefik v1 labels, to be removed when unsupported #}
       traefik.frontend.headers.customResponseHeaders: "X-Robots-Tag:noindex, nofollow"
-      {{- traefik1_labels.odoo(domains_staging, ["/"]) }}
+      {{- traefik1_labels.odoo(domains_test, ["/"]) }}
       {{- traefik2_labels.odoo(
-        domains_staging,
+        domains_test,
         cidr_whitelist,
         _key,
         odoo_version,
@@ -62,7 +62,7 @@ services:
       default:
         aliases:
           - smtplocal
-    {%- if odoo_proxy == "traefik" and domains_staging %}
+    {%- if odoo_proxy == "traefik" and domains_test %}
       inverseproxy_shared:
     labels:
       traefik.docker.network: "inverseproxy_shared"
@@ -76,7 +76,7 @@ services:
       # Mailhog service
       traefik.http.middlewares.{{ _key }}-mailhog-stripprefix.stripPrefix.prefixes: /smtpfake
       traefik.http.services.{{ _key }}-mailhog.loadbalancer.server.port: 8025
-      {%- call(domain_group) macros.domains_loop_grouped(domains_staging|rejectattr("redirect_to")) %}
+      {%- call(domain_group) macros.domains_loop_grouped(domains_test|rejectattr("redirect_to")) %}
       traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.entrypoints: web-main
       traefik.http.routers.{{ _key }}-mailhog-{{ domain_group.loop.index0 }}.middlewares:
         {{ _key }}-buffering,

@@ -75,7 +75,7 @@ def update_domains_structure(c, dst_path, answers_rel_path):
     In template v2, we support multiple domains:
 
     - domains_prod is a list of dicts
-    - domains_staging is a list of dicts
+    - domains_test is a list of dicts
     """
     answers_path = Path(dst_path, answers_rel_path)
     answers_yaml = _load_yaml(answers_path)
@@ -97,12 +97,12 @@ def update_domains_structure(c, dst_path, answers_rel_path):
                 }
             )
     answers_yaml.setdefault("domains_prod", new_domains_prod)
-    # Update domains_staging
+    # Update domains_test
     domain_test = answers_yaml.pop("domain_test", None)
-    new_domains_staging = []
+    new_domains_test = []
     if domain_test:
-        new_domains_staging.append(
+        new_domains_test.append(
             {"hosts": [domain_test], "cert_resolver": traefik_cert_resolver}
         )
-    answers_yaml.setdefault("domains_staging", new_domains_staging)
+    answers_yaml.setdefault("domains_test", new_domains_test)
     answers_path.write_text(yaml.safe_dump(answers_yaml))

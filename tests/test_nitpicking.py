@@ -100,7 +100,7 @@ def test_cidr_whitelist_rules(
             "project_name": "test-cidr-whitelist",
             "cidr_whitelist": ["123.123.123.123/24", "456.456.456.456"],
             "domains_prod": [{"hosts": ["www.example.com"]}],
-            "domains_staging": [{"hosts": ["demo.example.com"]}],
+            "domains_test": [{"hosts": ["demo.example.com"]}],
         },
     )
     # TODO Use Traefik to test this, instead of asserting labels

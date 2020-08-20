@@ -146,10 +146,10 @@ domains_prod:
 
     ⚠ Some advanced features are only available if you deploy with Traefik 2.
 
-domains_staging:
+domains_test:
   type: yaml
   help: |
-    Configure the staging (demo) domains for this project.
+    Configure the test domains for this project.
 
     The format is the same as for `prod_domains`; a list with these keys:
 

@@ -217,12 +217,12 @@ def test_v2_0_0_migration(
                 }
             )
         assert answers["domains_prod"] == expected_domains_prod
-        expected_domains_staging = []
+        expected_domains_test = []
         if data.get("domain_test"):
-            expected_domains_staging.append(
+            expected_domains_test.append(
                 {
                     "hosts": [domain_test],
                     "cert_resolver": data.get("traefik_cert_resolver"),
                 }
             )
-        assert answers["domains_staging"] == expected_domains_staging
+        assert answers["domains_test"] == expected_domains_test

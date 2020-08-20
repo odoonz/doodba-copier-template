@@ -8,7 +8,7 @@
 {%- macro main_domains_rule(domain_groups_list) -%}
   {%- set had_first_match = false -%}
   Host(
-    {%- call(domain) macros.domains_loop_single(domain_groups_list)) %}
+    {%- call(domain) macros.domains_loop_single(domain_groups_list) %}
       {%- if had_first_match %}, {% endif %}
       {%- set had_first_match = true %}
       {{- "`%s`"|format(domain.host) }}
@@ -16,13 +16,12 @@
   )
 {%- endmacro %}
 
-{%- macro key(project_name, odoo_version) %}
-  {{- '%s-%.1f-prod'|format(project_name, odoo_version)|replace('.', '-') }}
+{%- macro key(project_name, odoo_version, suffix) %}
+  {{- '%s-%.1f-%s'|format(project_name, odoo_version, suffix)|replace('.', '-') }}
 {%- endmacro %}
 
-{%- macro odoo(domain_groups_list, cidr_whitelist, odoo_version,
+{%- macro odoo(domain_groups_list, cidr_whitelist, key, odoo_version,
                paths_without_crawlers, project_name) %}
-      {%- set key %}{% call key(project_name, odoo_version) %}{% endset %}
       {%- set domains_without_redirection = domain_groups_list|rejectattr("redirect_to") %}
       # Services
       traefik.http.services.{{ key }}-main.loadbalancer.server.port: 8069
@@ -50,7 +49,7 @@
         {{ key }}-redirect-{{ domain_group.loop.index0 }}
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.rule:
-        {%- call main_domains_rule([domain_group]) %}
+        {%- call main_domains_rule([domain_group]) %}{% endcall %}
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
       traefik.http.routers.{{ key }}-redirect-{{ domain_group.loop.index0 }}.tls: "true"
       {%- if domain_group.cert_resolver %}
@@ -66,7 +65,7 @@
         {{ key }}-compress
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.rule:
-        {% call main_domains_rule([domain_group]) %}
+        {% call main_domains_rule([domain_group]) %}{% endcall %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.service: "{{ key }}-main"
       {%- if domain_group.cert_resolver %}
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
@@ -77,10 +76,11 @@
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.middlewares: {{ key }}-whitelist
       {%- endif %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.rule:
-        {% call main_domains_rule([domain_group]) %} && PathPrefix(`/longpolling/`)
+        {% call main_domains_rule([domain_group]) %}{% endcall %} && PathPrefix(`/longpolling/`)
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.service: "{{ key }}-longpolling"
       {%- if domain_group.cert_resolver %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
+      {%- endif %}
       {%- endif %}
       {%- if paths_without_crawlers %}
       # Forbid crawlers at domain(s) {{ domain_group.hosts|join(", ") }}
@@ -91,7 +91,7 @@
         {{ key }}-forbid-crawlers
         {%- if cidr_whitelist %}, {{ key }}-whitelist{% endif %}
       traefik.http.routers.{{ key }}-forbiddenCrawlers-{{ domain_group.loop.index0 }}.rule:
-        {% call main_domains_rule([domain_group]) %} && Path(
+        {% call main_domains_rule([domain_group]) %}{% endcall %} && Path(
           {%- for path in paths_without_crawlers -%}
           `{{ path }}`, `{{ path }}/{anything:.*}`
           {%- if not loop.last %}, {% endif %}

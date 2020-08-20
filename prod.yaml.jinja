@@ -1,5 +1,6 @@
 {%- import "_traefik1_labels.yml.jinja" as traefik1_labels -%}
 {%- import "_traefik2_labels.yml.jinja" as traefik2_labels -%}
+{%- set _key = traefik2_labels.key(project_name, odoo_version, "prod") -%}
 version: "2.4"
 
 services:
@@ -27,14 +28,15 @@ services:
     {%- if odoo_proxy == "traefik" and domains_prod %}
       inverseproxy_shared:
     labels:
-      {%- call traefik1_labels.odoo(domains_prod, paths_without_crawlers) %}
+      {%- call traefik1_labels.odoo(domains_prod, paths_without_crawlers) %}{% endcall %}
       {%- call traefik2_labels.odoo(
         domains_prod,
         cidr_whitelist,
+        _key,
         odoo_version,
         paths_without_crawlers,
         project_name,
-      ) %}
+      ) %}{% endcall %}
     {%- endif %}
 
   db:

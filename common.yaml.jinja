@@ -1,4 +1,4 @@
-{% from "_shared.jinja" import first_main_domain %}
+{% from "_macros.jinja" import first_main_domain %}
 version: "2.4"
 
 services:
@@ -80,7 +80,7 @@ services:
   backup:
     image: tecnativa/duplicity:postgres{% if backup_dst.startswith(('boto3+s3://', 's3://', 's3+http://')) %}-s3{% endif %}
     hostname: backup
-    {%- call(domain) first_main_domain(domains_prod)) %}
+    {%- call(domain) first_main_domain(domains_prod) %}
     domainname: {{ domain.host }}
     {%- endcall %}
     init: true

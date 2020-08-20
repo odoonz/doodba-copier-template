@@ -10,18 +10,18 @@ from plumbum.cmd import docker_compose
 
 
 @pytest.mark.parametrize("environment", ("test", "prod"))
-def test_multiple_domains_prod(
+def test_multiple_domains(
     cloned_template: Path,
     supported_odoo_version: float,
     tmp_path: Path,
     traefik_host: str,
-    environmment: str,
+    environment: str,
 ):
     """Test multiple domains are produced properly."""
     data = {
         "odoo_version": supported_odoo_version,
         "project_name": uuid.uuid4().hex,
-        f"domains_{environmment}": [
+        f"domains_{environment}": [
             # main0 has no TLS
             {"hosts": [f"main0.{traefik_host}.sslip.io"], "cert_resolver": False},
             {
@@ -44,7 +44,7 @@ def test_multiple_domains_prod(
             },
         ],
     }
-    dc = docker_compose["-f", f"{environmment}.yaml"]
+    dc = docker_compose["-f", f"{environment}.yaml"]
     with local.cwd(tmp_path):
         copy(
             src_path=str(cloned_template),

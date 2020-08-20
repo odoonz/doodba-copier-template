@@ -74,11 +74,11 @@
       traefik.http.routers.{{ key }}-main-{{ domain_group.loop.index0 }}.tls.certResolver: "{{ domain_group.cert_resolver }}"
       {%- endif %}
       {%- endif %}
+      {%- endif %}
       # Longpolling service at domain(s) {{ domain_group.hosts|join(", ") }}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.entrypoints: "web-main"
       {%- if cidr_whitelist %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.middlewares: {{ key }}-whitelist
-      {%- endif %}
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.rule:
         {{ domains_rule([domain_group]) }} && PathPrefix(`/longpolling/`)
       traefik.http.routers.{{ key }}-longpolling-{{ domain_group.loop.index0 }}.service: "{{ key }}-longpolling"

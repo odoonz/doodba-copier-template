@@ -8,9 +8,10 @@ on:
     inputs:
       pytest_addopts:
         description:
-          Extra options for pytest; see
+          Extra options for pytest; use -vv for full details; see
           https://docs.pytest.org/en/latest/example/simple.html#how-to-change-command-line-options-defaults
         required: false
+        default: -ra
 
 env:
   LANG: "en_US.utf-8"
